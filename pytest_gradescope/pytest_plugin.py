@@ -39,12 +39,12 @@ def pytest_generate_tests(metafunc):
         for group_name, stats in group_stats.items():
             stats['max_score'] *= getattr(metafunc.function, 'max_score', 0)
             stats['score'] *= getattr(metafunc.function, 'max_score', 0)
-            test_name = f'{metafunc.function.__module__}.py::{metafunc.function.__name__}[{group_name}]'
+            test_name = f'{metafunc.function.__name__}[{group_name}]'
             test_group_stats[test_name] = stats
 
         metafunc.parametrize('group_name', group_stats.keys())
     else:
-        test_name = f'{metafunc.function.__module__}.py::{metafunc.function.__name__}'
+        test_name = f'{metafunc.function.__name__}'
         test_group_stats[test_name] = {
             'max_score': getattr(metafunc.function, 'max_score', 0)
         }
@@ -83,7 +83,8 @@ def pytest_terminal_summary(terminalreporter, exitstatus):
 
     for s in all_tests:
         output = s.capstdout + '\n' + s.capstderr
-        group_stats = test_group_stats[s.nodeid]
+        test_name = s.nodeid.split('::')[1]
+        group_stats = test_group_stats[test_name]
 
         max_score = group_stats['max_score']
         score = group_stats.get('score', max_score if s.passed else 0)
